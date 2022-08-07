@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  django:
+    container_name: django
+    build: ./
+    volumes:
+      - ./src:/src:rw
+      - ./.env:/src/core/.env
+    depends_on:
+      - postgres
+    ports:
+      - 8000:8000
+    environment:
+      PROCESS: DJANGO_DEV
+  
+  postgres:
+    container_name: postgres
+    image: postgres:14.4-alpine
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - 5432:5432
+  
+  celery:
+    container_name: celery
+    build: ./
+    volumes:
+      - ./src:/src:rw
+      - ./.env:/src/core/.env
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      PROCESS: CELERY_DEV
+      
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.9.21-alpine
+    environment:
+      RABBITMQ_DEFAULT_VHOST: vhost
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: pass
